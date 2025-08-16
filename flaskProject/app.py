@@ -233,5 +233,6 @@ def equi_del():
 def equi_add():
     return (render_template('management.html'))
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+
