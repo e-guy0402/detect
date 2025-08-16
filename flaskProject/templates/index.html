@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>摄像头控制</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <img id="video_feed" src="{{ url_for('video_feed') }}" width="640">
+    {#调用摄像头#}
+    <button onclick="controlCamera('open', 0)">开启摄像头0</button>
+    <button onclick="controlCamera('open', 1)">开启摄像头1</button>
+    <button onclick="controlCamera('close')">关闭摄像头</button>
+    <p id="status"></p>
+
+    <script>
+        function controlCamera(action, cameraId) {
+            $.ajax({
+                url: '/control_camera',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({action: action, camera_id: cameraId}),
+                success: (data) => {
+                    $('#status').text(data.message);
+                    if (action === 'open') {
+                        $('#video_feed').attr('src', "{{ url_for('video_feed') }}");
+                    } else if (action === 'close') {
+                        $('#video_feed').attr('src', '');
+                    }
+                },
+                error: (xhr) => {
+                    $('#status').text('操作失败: ' + xhr.responseJSON.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

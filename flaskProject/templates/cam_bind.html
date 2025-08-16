@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摄像头绑定系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #statusMessage {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            display: block;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>摄像头绑定</h1>
+        <form id="bindForm">
+            <div class="form-group">
+                <label for="equipment_id">设备ID:</label>
+                <input type="text" id="equipment_id" name="equipment_id" required placeholder="请输入设备ID">
+            </div>
+            <div class="form-group">
+                <label for="camera_id">摄像头ID:</label>
+                <input type="text" id="camera_id" name="camera_id" required placeholder="请输入摄像头ID">
+            </div>
+            <div class="form-group">
+                <label>闪光灯设置:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="flash_required" name="flash_required">
+                    <label for="flash_required">需要闪光灯</label>
+                </div>
+            </div>
+            <button type="button" id="bindButton">确认绑定</button>
+        </form>
+        <div id="statusMessage"></div>
+    </div>
+
+    <script>
+        document.getElementById('bindButton').addEventListener('click', function() {
+            // 获取表单数据
+            const equipmentId = document.getElementById('equipment_id').value;
+            const cameraId = document.getElementById('camera_id').value;
+            const flashRequired = document.getElementById('flash_required').checked;
+
+            // 验证输入
+            if (!equipmentId || !cameraId) {
+                showStatus('请填写设备ID和摄像头ID', 'error');
+                alert('请填写设备ID和摄像头ID'); // 添加弹窗提示
+                return;
+            }
+
+            // 准备发送的数据
+            const data = {
+                equipment_id: equipmentId,
+                camera_id: cameraId,
+                flash_required: flashRequired
+            };
+
+            // 显示加载状态
+            showStatus('正在绑定中...', 'info');
+
+            // 发送绑定请求到后端
+            fetch('/camera/bind', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('绑定失败，设备不存在');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus('绑定成功！', 'success');
+                    alert('绑定成功！'); // 成功弹窗提示
+                    // 清空表单
+                    document.getElementById('bindForm').reset();
+                } else {
+                    showStatus(`绑定失败: ${data.message}`, 'error');
+                    alert(`绑定失败: ${data.message}`); // 失败弹窗提示
+                }
+            })
+            .catch(error => {
+                showStatus(`绑定出错: ${error.message}`, 'error');
+                alert(`绑定出错: ${error.message}`); // 错误弹窗提示
+                console.error('Error:', error);
+            });
+        });
+
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = type;
+        }
+    </script>
+</body>
+</html>

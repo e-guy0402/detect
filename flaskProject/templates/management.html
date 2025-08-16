@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <form id="equipmentForm">
+        <input type="text" id="equipment_id" placeholder="设备ID" required>
+        <input type="text" id="model" placeholder="型号" required>
+        <input type="text" id="location" placeholder="位置" required>
+        <input type="text" id="supplier" placeholder="供应商" required>
+        <input type="date" id="production_date" placeholder="生产日期">
+        <button type="button" onclick="submitData()">提交</button>
+    </form>
+
+    <script>
+        function submitData() {
+            const formData = {
+                equipment_id: document.getElementById('equipment_id').value,
+                model: document.getElementById('model').value,
+                location: document.getElementById('location').value,
+                supplier: document.getElementById('supplier').value,
+                production_date: document.getElementById('production_date').value || null
+            };
+
+            fetch('/equipment_archive/insert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                alert(data.message);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

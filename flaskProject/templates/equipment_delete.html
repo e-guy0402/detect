@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备删除工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        input {
+            padding: 8px;
+            width: 70%;
+            border: 1px solid #ddd;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        #loading {
+            display: none;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>设备删除工具</h2>
+    <div class="input-group">
+        <input type="text" id="equipmentId" placeholder="请输入要删除的设备ID">
+        <button onclick="handleDelete()">确认删除</button>
+    </div>
+    <div id="loading">删除中，请稍候...</div>
+    <div id="result"></div>
+
+    <script>
+        async function handleDelete() {
+            const equipmentId = document.getElementById('equipmentId').value.trim();
+            if (!equipmentId) {
+                alert("请输入设备ID");
+                return;
+            }
+
+            // 确认弹窗[1,5](@ref)
+            if (!confirm(`确定要删除设备 ${equipmentId} 吗？此操作不可撤销！`)) {
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('loading').style.display = 'block';
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+            resultDiv.style.color = '';
+
+            try {
+                // 发送DELETE请求[6,8](@ref)
+                const response = await fetch(`/equipment_archive/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer your-token' // 实际项目替换为真实token
+                    },
+                    body: JSON.stringify({ equipment_id: equipmentId })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.style.color = 'green';
+                    resultDiv.innerHTML = `✅ 成功删除设备 ${equipmentId}`;
+                } else {
+                    throw new Error(data.message || '删除失败');
+                }
+            } catch (error) {
+                resultDiv.style.color = 'red';
+                resultDiv.innerHTML = `❌ 错误: ${error.message}`;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
